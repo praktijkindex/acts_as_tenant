@@ -59,15 +59,6 @@ module ActsAsTenant
           m.send "#{association}_id=".to_sym, ActsAsTenant.current_tenant.id
         }, :on => :create
     
-        reflect_on_all_associations.each do |a|
-          unless a == reflect_on_association(association) || a.macro != :belongs_to || a.options[:polymorphic] 
-            association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
-            validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(:id => value).present?
-            end
-          end
-        end
-        
         # Dynamically generate the following methods:
         # - Rewrite the accessors to make tenant immutable
         # - Add a helper method to verify if a model has been scoped by AaT
